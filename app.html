@@ -1211,11 +1211,23 @@ body.acc-view .stage { display: none; }
     return ((d.getDay() + ((weeks % 2) + 2) % 2) % 2) ? 'B' : 'A';
   }
   // the user's own edits of a workout (sets, reps, exercises) live in `plans`, keyed A / B / abs, and sync with the settings doc
-  const wItems = (id) => (Array.isArray(plans[id]) && plans[id].length ? plans[id] : WORKOUTS[id][1]).filter((x) => Array.isArray(x) && EX[x[0]]);
-  function planIdFor(g, k) { const wd = fromKey(k).getDay(); return g.id === 'strength' ? (wd <= 4 ? abFor(k) : null) : g.id === 'abs' ? 'abs' : null; }
+  // a personal program (built by the coach on the site) lives in plans._prog: { w: {P1: {title, items}}, order: ['P1', ...], days: [weekdays], start: 'YYYY-MM-DD', rest }
+  const progOf = () => { const p = plans._prog; return p && p.w && Array.isArray(p.order) && p.order.length && Array.isArray(p.days) && p.days.length ? p : null; };
+  const baseOf = (id) => { const p = progOf(); return p && p.w[id] ? [p.w[id].title, p.w[id].items] : WORKOUTS[id] || ['', []]; };
+  const wItems = (id) => (Array.isArray(plans[id]) && plans[id].length ? plans[id] : baseOf(id)[1]).filter((x) => Array.isArray(x) && EX[x[0]]);
+  // the program's workouts are cycled in order on its training days, counted from the day it was made
+  function progFor(p, k) {
+    const d = fromKey(k), wd = d.getDay(); if (!p.days.includes(wd)) return null;
+    const s = fromKey(p.start || k), n = Math.round((d - s) / 86400000);
+    if (n < 0) return p.order[0];
+    let c = Math.floor(n / 7) * p.days.length; const rem = ((n % 7) + 7) % 7;
+    for (let i = 0; i < rem; i++) if (p.days.includes((s.getDay() + i) % 7)) c++;
+    return p.order[((c % p.order.length) + p.order.length) % p.order.length];
+  }
+  function planIdFor(g, k) { const wd = fromKey(k).getDay(), p = progOf(); return g.id === 'strength' ? (p ? progFor(p, k) : wd <= 4 ? abFor(k) : null) : g.id === 'abs' ? 'abs' : null; }
   function planFor(g, k) {
     const id = planIdFor(g, k);
-    return id ? { id, title: WORKOUTS[id][0], custom: Array.isArray(plans[id]) && plans[id].length > 0, items: wItems(id).map(([key, sets]) => ({ key, sets: String(sets), name: EX[key].n })) } : null;
+    return id ? { id, title: baseOf(id)[0], custom: Array.isArray(plans[id]) && plans[id].length > 0, items: wItems(id).map(([key, sets]) => ({ key, sets: String(sets), name: EX[key].n })) } : null;
   }
   function parseSets(str) {
     let m = String(str).match(/^(\d+)×(\d+)(.*)$/); if (m) return { s: +m[1], r: +m[2], tail: m[3] };
@@ -1330,7 +1342,7 @@ body.acc-view .stage { display: none; }
       '</ul><p class="mnote">המספר הוא כמה תרגילים עובדים על השריר כשריר ראשי. "עזר" הוא תרגיל שהשריר עוזר בו.</p></div>';
   }
   const REST = 30;
-  const restOf = (pid) => { const r = plans._rest && plans._rest[pid]; return typeof r === 'number' && r >= 10 && r <= 300 ? r : REST; };
+  const restOf = (pid) => { const r = plans._rest && plans._rest[pid], p = progOf(); return typeof r === 'number' && r >= 10 && r <= 300 ? r : p && p.rest >= 10 && p.rest <= 300 ? p.rest : REST; };
   const wk = { open: false, gid: null, title: '', items: [], i: 0, done: [], mode: 'set', end: 0, total: 0, raf: 0, t0: 0, lock: null, last: -1 };
   const nSets = (it) => EX[it.key].cardio ? 1 : (parseInt(it.sets, 10) || 3);
   const holdSec = (it) => EX[it.key].cardio ? (parseInt(it.sets, 10) || 10) * 60 : EX[it.key].hold ? (parseInt(it.sets.split('×')[1], 10) || 30) : 0;

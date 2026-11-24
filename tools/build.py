@@ -117,7 +117,7 @@ cut('  // ---------- sign-up / sign-in gate (phone + password) ----------', ''' 
     let mode = '', busy = false;
     function open() {
       try { sessionStorage.setItem(SES_KEY, '1'); localStorage.setItem(KNOWN_LS, '1'); if ($('gRem').checked) localStorage.setItem(REM_LS, '1'); else localStorage.removeItem(REM_LS); } catch (e) {}
-      paintLogout(); initStore(); paintPush();
+      paintLogout(); initStore(); paintPush(); if (storeSettled) coachCheck(); else settleWaiters.push(coachCheck);
       if (g.hidden) { g.remove(); onOpen(); return; }
       sfx.boom(); try { navigator.vibrate && navigator.vibrate([20, 40, 60]); } catch (e) {}
       g.classList.add('out'); onOpen();
@@ -291,5 +291,16 @@ rep("    const gt = $('gate'); if (gt && !gt.hidden) return;", "    const gt = $
 rep("    if (v === 'acc') {\n      paintAcc(); buildRems();", "    if (v === 'acc') {\n      paintAcc(); buildRems(); paintPush();")
 
 rep("row.querySelector('.cal').href = calUrl(g, r);", "")
+
+# ---------- coach: onboarding questions and a personal program for everyone but the owner ----------
+OWNER_PHONES = []  # the owner's phone(s); empty means "the account named אימרי"
+C = ROOT / 'tools' / 'coach'
+rep('</style>', (C / 'coach.css').read_text(encoding='utf-8') + '</style>')
+rep('<div class="intro" id="intro"', (C / 'coach.html').read_text(encoding='utf-8') + '\n<div class="intro" id="intro"')
+PW = '    <section class="sec">\n      <div class="sechead"><h2>שינוי סיסמה</h2>'
+rep(PW, (C / 'prog.html').read_text(encoding='utf-8') + PW)
+rep('  // ---------- change password ----------', (C / 'coach.js').read_text(encoding='utf-8').replace('__OWNER_PHONES__', repr(OWNER_PHONES)) + '\n  // ---------- change password ----------')
+rep("      paintAcc(); buildRems(); paintPush();", "      paintAcc(); buildRems(); paintPush(); paintProg();")
+
 (ROOT / 'index.html').write_text(s, encoding='utf-8')
 print('wrote index.html', len(s))
