@@ -830,6 +830,43 @@ body.acc-view .stage { display: none; }
 .prog-btns .b { background: rgba(242,243,245,.1); color: var(--paper); }
 .prog-btns button:disabled { opacity: .5; }
 @keyframes coPulse { 50% { transform: scale(1.08); } }
+/* ---------- admin (owner only) ---------- */
+.acc-av.adm i { background: conic-gradient(from var(--ang), #FFB547, #FF4D8D, #9B6BFF, #4DB8FF, #4DFFC3, #FFB547); }
+.tabbar.adm3 { grid-template-columns: 1fr 1fr 1fr; width: min(340px, calc(100% - 28px)); }
+.tabbar.adm3 .tb-ind { width: calc(33.333% - 4px); transform: translateX(calc(var(--ti, 0) * -100%)); }
+.adm-list { display: flex; flex-direction: column; gap: 12px; }
+.adm-u { border-radius: 20px; border: 1px solid var(--hair); background: #fff; overflow: hidden; }
+.adm-u.me { border-color: transparent; box-shadow: 0 0 0 1.5px rgba(255,77,141,.33); }
+.adm-head { display: flex; align-items: center; gap: 12px; padding: 14px; }
+.adm-mono { flex: none; width: 44px; height: 44px; border-radius: 13px; display: grid; place-items: center; font-weight: 900; font-size: 19px; background: var(--ink); color: var(--paper); }
+.adm-u.me .adm-mono { background: var(--holo-lin); background-size: 200% 100%; animation: slide 3s linear infinite; color: var(--ink); }
+.adm-who { flex: 1; min-width: 0; text-align: right; }
+.adm-who b { display: block; font-size: 16px; font-weight: 800; }
+.adm-who small { display: block; font-size: 12.5px; color: var(--muted); direction: ltr; text-align: right; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.adm-when { flex: none; font-family: var(--mono); font-size: 11px; color: var(--muted); text-align: left; }
+.adm-when b { display: block; font-size: 13px; color: var(--ink); font-weight: 800; }
+.adm-tag { display: inline-block; margin-top: 3px; font-family: var(--mono); font-size: 10px; padding: 2px 7px; border-radius: 99px; background: rgba(255,77,141,.14); color: #D62E68; }
+.adm-body { display: none; padding: 0 14px 14px; flex-direction: column; gap: 12px; }
+.adm-u.open .adm-body { display: flex; }
+.adm-facts { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.adm-fact { border-radius: 13px; background: var(--paper2); padding: 10px 12px; }
+.adm-fact b { display: block; font-size: 17px; font-weight: 900; }
+.adm-fact span { font-size: 11.5px; color: var(--muted); }
+.adm-plan { border-radius: 13px; background: var(--paper2); padding: 10px 12px; font-size: 13px; }
+.adm-plan b { font-weight: 800; }
+.adm-plan span { color: var(--muted); }
+.adm-acts { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.adm-acts button { height: 44px; border-radius: 13px; border: 1px solid var(--hair); background: #fff; color: var(--ink); font-weight: 800; font-size: 14px; transition: transform .3s var(--spring); }
+.adm-acts button:active { transform: scale(.94); }
+.adm-acts .login { grid-column: 1 / -1; background: var(--ink); color: var(--paper); border-color: var(--ink); }
+.adm-acts .del { color: #D62E68; border-color: rgba(214,46,104,.4); }
+.adm-acts button:disabled { opacity: .5; }
+.adm-out { font-size: 13px; line-height: 1.5; border-radius: 13px; padding: 10px 12px; background: var(--paper2); display: none; word-break: break-word; }
+.adm-out.show { display: block; }
+.adm-out.warn { background: rgba(214,46,104,.1); color: #B02A58; }
+.adm-out .code { font-family: var(--mono); font-weight: 700; background: var(--ink); color: var(--paper); padding: 3px 9px; border-radius: 7px; display: inline-block; margin-top: 5px; direction: ltr; user-select: all; }
+.adm-out a { color: inherit; font-weight: 700; }
+.adm-empty { text-align: center; color: var(--muted); padding: 30px 0; font-size: 14px; }
 </style>
 </head>
 <body>
@@ -934,10 +971,26 @@ body.acc-view .stage { display: none; }
   </div>
 </div>
 
+  <div class="view" id="vAdmin" hidden>
+    <header class="acc-hero">
+      <div class="acc-av adm" aria-hidden="true"><i></i><span>★</span></div>
+      <div class="acc-id"><div class="eyebrow mono"><span>ניהול</span></div><h1 class="acc-name">ניהול</h1><span class="acc-phone mono" id="admCount"></span></div>
+    </header>
+    <section class="nums">
+      <div class="num"><b id="admTotal">0</b><span>משתמשים רשומים</span></div>
+      <div class="num"><b id="admActive">0</b><span>נכנסו ב־7 ימים</span></div>
+    </section>
+    <section class="sec">
+      <div class="sechead"><h2>המשתמשים</h2><span class="count mono">USERS</span></div>
+      <p class="acc-note">סיסמאות שמורות מוצפנות ואי אפשר לראות אותן. אפשר לאפס סיסמה, להיכנס בתור משתמש, או למחוק.</p>
+      <div class="adm-list" id="admList"></div>
+    </section>
+  </div>
 <nav class="tabbar" id="tabbar" aria-label="מסכים" dir="rtl" lang="he">
   <i class="tb-ind" aria-hidden="true"></i>
   <button class="tb on" data-view="home" aria-current="page"><svg class="i" viewBox="0 0 24 24"><path d="M4 11l8-6.5 8 6.5V20a1 1 0 01-1 1h-4.5v-6h-5v6H5a1 1 0 01-1-1z"/></svg><span>היום</span></button>
   <button class="tb" data-view="acc"><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="8.5" r="3.8"/><path d="M4.5 20.5c1.2-4 4.2-6 7.5-6s6.3 2 7.5 6"/></svg><span>חשבון</span><b class="tb-badge mono" id="tbStreak" hidden></b></button>
+  <button class="tb" data-view="admin" id="tbAdmin" hidden><svg class="i" viewBox="0 0 24 24"><path d="M12 3l7 3v5c0 4.2-2.9 7.4-7 8.5C7.9 18.4 5 15.2 5 11V6z"/><path d="M9 12l2 2 4-4"/></svg><span>ניהול</span></button>
 </nav>
 <div class="island" id="island" hidden role="status" aria-live="polite" dir="rtl" lang="he" tabindex="0">
   <div class="is-l" id="isL"></div>
@@ -2527,7 +2580,7 @@ body.acc-view .stage { display: none; }
       if (/error_code=otp_expired|error=access_denied/.test(HASH)) fail('הקישור פג תוקף. נכנסים כאן, ואם צריך שולחים שוב');
     })();
   }
-  function paintLogout() { const b = $('logout'); if (b) b.hidden = !sbUser; }
+  function paintLogout() { const b = $('logout'); if (b) b.hidden = !sbUser; const a = $('tbAdmin'); if (a) { a.hidden = !isAdmin(); $('tabbar').classList.toggle('adm3', isAdmin()); } }
   $('logout').addEventListener('click', async () => {
     try { localStorage.removeItem(REM_LS); sessionStorage.removeItem(SES_KEY); localStorage.removeItem(LS_KEY); } catch (e) {}
     try { await sb.auth.signOut(); } catch (e) {}
@@ -2599,7 +2652,8 @@ body.acc-view .stage { display: none; }
   let view = 'home';
   function setView(v) {
     if (v === view) return; view = v;
-    $('vHome').hidden = v !== 'home'; $('vAcc').hidden = v !== 'acc';
+    $('vHome').hidden = v !== 'home'; $('vAcc').hidden = v !== 'acc'; { const va = $('vAdmin'); if (va) va.hidden = v !== 'admin'; }
+    $('tabbar').style.setProperty('--ti', v === 'admin' ? 2 : v === 'acc' ? 1 : 0);
     document.body.classList.toggle('acc-view', v === 'acc');
     const tb = $('tabbar'); tb.classList.toggle('acc', v === 'acc');
     tb.querySelectorAll('.tb').forEach((b) => { const on = b.dataset.view === v; b.classList.toggle('on', on); if (on) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current'); });
@@ -2609,7 +2663,7 @@ body.acc-view .stage { display: none; }
     if (v === 'acc') {
       paintAcc(); buildRems(); paintPush(); paintProg();
       const h = $('heat'); if (!RM) { h.style.setProperty('--base', '.25s'); h.classList.remove('enter'); void h.offsetWidth; h.classList.add('enter'); clearTimeout(setView.t); setView.t = setTimeout(() => h.classList.remove('enter'), 2800); }
-    } else build('');
+    } else if (v === 'admin') { paintAdmin(); loadAdmin(); } else build('');
     sfx.whoosh(); try { navigator.vibrate && navigator.vibrate(10); } catch (e) {}
   }
   function bestStreak() {
@@ -2918,6 +2972,87 @@ body.acc-view .stage { display: none; }
     const wait = () => { if ($('intro') || ($('gate') && !$('gate').hidden) || !$('wk').hidden) { setTimeout(wait, 500); return; } if (!progOf() && $('coach').hidden) coOpen('new'); };
     setTimeout(wait, 700);
   }
+
+
+  // ---------- admin (owner only): a third tab to manage everyone's accounts ----------
+  const ADMIN_IDS = ['dfdf0d4d-ad6e-48bf-9e58-4cfdc3cb724c'];
+  const isAdmin = () => !!sbUser && ADMIN_IDS.includes(sbUser.id);
+  let admUsers = null, admOpen = {};
+  async function admCall(action, extra) {
+    const { data } = await sb.auth.getSession();
+    const tok = data && data.session && data.session.access_token;
+    const res = await fetch(SB_URL + '/functions/v1/admin', { method: 'POST', headers: { 'Content-Type': 'application/json', apikey: SB_KEY, Authorization: 'Bearer ' + (tok || SB_KEY) }, body: JSON.stringify(Object.assign({ action }, extra || {})) });
+    const j = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(j.error || ('http ' + res.status));
+    return j;
+  }
+  const admWhen = (iso) => {
+    if (!iso) return 'לא נכנס';
+    const d = new Date(iso), now = Date.now(), m = Math.floor((now - d) / 60000);
+    if (m < 1) return 'עכשיו'; if (m < 60) return 'לפני ' + m + ' דק׳';
+    const h = Math.floor(m / 60); if (h < 24) return 'לפני ' + h + ' שע׳';
+    const dd = Math.floor(h / 24); if (dd < 7) return 'לפני ' + dd + ' ימים';
+    return pad(d.getDate()) + '.' + pad(d.getMonth() + 1) + '.' + String(d.getFullYear()).slice(2);
+  };
+  const DAYN2 = ['א', 'ב', 'ג', 'ד', 'ה', 'ו', 'ש'];
+  function admRow(u) {
+    const init = (u.name || u.email || '?').trim().charAt(0).toUpperCase() || '★';
+    const act = Math.floor((Date.now() - new Date(u.last || u.created)) / 86400000);
+    return '<div class="adm-u' + (u.owner ? ' me' : '') + (admOpen[u.id] ? ' open' : '') + '" data-u="' + u.id + '">' +
+      '<div class="adm-head" data-toggle="' + u.id + '" role="button"><div class="adm-mono">' + esc(init) + '</div>' +
+      '<div class="adm-who"><b>' + esc(u.name || 'ללא שם') + (u.owner ? ' <span class="adm-tag">אתה</span>' : '') + (!u.confirmed ? ' <span class="adm-tag">לא אישר מייל</span>' : '') + '</b><small>' + esc(u.email) + '</small></div>' +
+      '<div class="adm-when"><b>' + esc(admWhen(u.last)) + '</b>כניסה</div></div>' +
+      '<div class="adm-body">' +
+        '<div class="adm-facts"><div class="adm-fact"><b>' + (u.ticks || 0) + '</b><span>סימונים סה״כ</span></div><div class="adm-fact"><b>' + (u.activeDays || 0) + '</b><span>ימים פעילים</span></div></div>' +
+        (u.plan ? '<div class="adm-plan"><b>' + esc(u.plan.title || 'תוכנית') + '</b> <span>· ' + (u.plan.days || []).map((d) => DAYN2[d]).join(' ') + '</span><br><span>' + (u.plan.workouts || []).map(esc).join(' · ') + '</span></div>' : '<div class="adm-plan"><span>אין עדיין תוכנית אישית</span></div>') +
+        '<div class="adm-out" id="admOut-' + u.id + '"></div>' +
+        (u.owner ? '' : '<div class="adm-acts"><button class="login" data-act="login" data-u="' + u.id + '">כניסה בתור ' + esc((u.name || '').split(' ')[0] || 'המשתמש') + '</button>' +
+          '<button data-act="reset" data-u="' + u.id + '">איפוס סיסמה</button>' +
+          '<button class="del" data-act="del" data-u="' + u.id + '">מחיקה</button></div>') +
+      '</div></div>';
+  }
+  function paintAdmin() {
+    const list = $('admList'); if (!list) return;
+    if (!admUsers) { list.innerHTML = '<div class="adm-empty">טוען…</div>'; return; }
+    const act7 = admUsers.filter((u) => u.last && Date.now() - new Date(u.last) < 7 * 86400000).length;
+    $('admTotal').textContent = admUsers.length; $('admActive').textContent = act7;
+    $('admCount').textContent = admUsers.length + ' משתמשים';
+    list.innerHTML = admUsers.length ? admUsers.map(admRow).join('') : '<div class="adm-empty">עדיין אין משתמשים חוץ ממך</div>';
+  }
+  async function loadAdmin(force) {
+    if (admUsers && !force) return;
+    try { const { users } = await admCall('list'); admUsers = users; }
+    catch (e) { admUsers = []; island.notify({ title: 'טעינת הניהול נכשלה', sub: String(e.message || ''), stay: 5000 }); }
+    paintAdmin();
+  }
+  function admOut(id, html, warn) { const o = $('admOut-' + id); if (!o) return; o.innerHTML = html; o.className = 'adm-out show' + (warn ? ' warn' : ''); }
+  const admBusy = {};
+  async function admAction(act, id) {
+    if (admBusy[id]) return; const u = (admUsers || []).find((x) => x.id === id); if (!u) return;
+    if (act === 'reset') {
+      const pass = prompt('סיסמה חדשה ל' + (u.name || u.email) + ' (6 תווים לפחות):'); if (pass == null) return;
+      if (pass.length < 6) return admOut(id, 'סיסמה של 6 תווים לפחות', true);
+      admBusy[id] = true;
+      try { await admCall('reset', { id, password: pass }); admOut(id, 'הסיסמה אופסה. מסרו למשתמש: <span class="code">' + esc(pass) + '</span>'); }
+      catch (e) { admOut(id, 'האיפוס נכשל', true); } finally { admBusy[id] = false; }
+    } else if (act === 'login') {
+      if (!confirm('להיכנס בתור ' + (u.name || u.email) + '? זה יוציא אותך מהחשבון שלך. תוכל לחזור אליו בהתנתקות וכניסה מחדש.')) return;
+      admBusy[id] = true;
+      try { const { link } = await admCall('login', { id }); if (link) location.href = link; else admOut(id, 'יצירת הקישור נכשלה', true); }
+      catch (e) { admOut(id, 'הכניסה נכשלה', true); } finally { admBusy[id] = false; }
+    } else if (act === 'del') {
+      if (!confirm('למחוק לגמרי את ' + (u.name || u.email) + '? כל הנתונים שלו יימחקו ואי אפשר לבטל.')) return;
+      if (!confirm('בטוח? זו פעולה סופית.')) return;
+      admBusy[id] = true;
+      try { await admCall('delete', { id }); admUsers = admUsers.filter((x) => x.id !== id); paintAdmin(); island.notify({ title: 'המשתמש נמחק', sub: u.name || u.email, stay: 4000 }); }
+      catch (e) { admOut(id, 'המחיקה נכשלה', true); admBusy[id] = false; }
+    }
+  }
+  $('admList').addEventListener('click', (e) => {
+    const t = e.target.closest('[data-toggle]');
+    if (t) { const id = t.dataset.toggle; admOpen[id] = !admOpen[id]; const c = $('admList').querySelector('.adm-u[data-u="' + id + '"]'); if (c) c.classList.toggle('open', admOpen[id]); sfx.tick(); return; }
+    const b = e.target.closest('[data-act]'); if (b) { e.stopPropagation(); admAction(b.dataset.act, b.dataset.u); }
+  });
 
   // ---------- change password ----------
   $('pwForm').addEventListener('input', () => { $('pwMsg').textContent = ''; $('pwMsg').className = 'pw-msg'; });

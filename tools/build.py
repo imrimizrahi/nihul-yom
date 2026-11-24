@@ -240,5 +240,25 @@ rep(PW, (C / 'prog.html').read_text(encoding='utf-8') + PW)
 rep('  // ---------- change password ----------', (C / 'coach.js').read_text(encoding='utf-8').replace('__OWNER_IDS__', repr(OWNER_IDS)) + '\n  // ---------- change password ----------')
 rep("      paintAcc(); buildRems(); paintPush();", "      paintAcc(); buildRems(); paintPush(); paintProg();")
 
+
+# ---------- admin tab + view (owner only) ----------
+A = ROOT / 'tools' / 'admin'
+rep('</style>', (A / 'admin.css').read_text(encoding='utf-8') + '</style>')
+# the admin view sits after the account view
+rep('</div>\n\n<nav class="tabbar"', '</div>\n\n' + (A / 'admin.html').read_text(encoding='utf-8') + '<nav class="tabbar"')
+# third tab button, hidden until we know the viewer is the owner
+rep('</b></button>\n</nav>', '</b></button>\n  <button class="tb" data-view="admin" id="tbAdmin" hidden><svg class="i" viewBox="0 0 24 24"><path d="M12 3l7 3v5c0 4.2-2.9 7.4-7 8.5C7.9 18.4 5 15.2 5 11V6z"/><path d="M9 12l2 2 4-4"/></svg><span>ניהול</span></button>\n</nav>')
+# setView: handle the admin view, its indicator slot, and load the list on open
+rep("    $('vHome').hidden = v !== 'home'; $('vAcc').hidden = v !== 'acc';",
+    "    $('vHome').hidden = v !== 'home'; $('vAcc').hidden = v !== 'acc'; { const va = $('vAdmin'); if (va) va.hidden = v !== 'admin'; }\n    $('tabbar').style.setProperty('--ti', v === 'admin' ? 2 : v === 'acc' ? 1 : 0);")
+rep("    } else build('');\n    sfx.whoosh();",
+    "    } else if (v === 'admin') { paintAdmin(); loadAdmin(); } else build('');\n    sfx.whoosh();")
+# reveal the admin tab for the owner when the gate opens
+rep("  function paintLogout() { const b = $('logout'); if (b) b.hidden = !sbUser; }",
+    "  function paintLogout() { const b = $('logout'); if (b) b.hidden = !sbUser; const a = $('tbAdmin'); if (a) { a.hidden = !isAdmin(); $('tabbar').classList.toggle('adm3', isAdmin()); } }")
+# the admin script
+rep('  // ---------- admin (owner only) ----------' if False else '  // ---------- change password ----------',
+    (A / 'admin.js').read_text(encoding='utf-8').replace('__OWNER_IDS__', repr(OWNER_IDS)) + '\n  // ---------- change password ----------')
+
 (ROOT / 'index.html').write_text(s, encoding='utf-8')
 print('wrote index.html', len(s))
