@@ -1,8 +1,8 @@
 
   // ---------- coach: questions for new users, then a personal program (AI on the server, rules as a fallback) ----------
   // The owner keeps his own A/B program and is never asked.
-  const OWNER_PHONES = __OWNER_PHONES__;
-  const isOwner = () => !!authRec && (OWNER_PHONES.length ? OWNER_PHONES.includes(normPhone(authRec.phone)) : /^אימרי/.test((authRec.name || '').trim()));
+  const OWNER_IDS = __OWNER_IDS__;
+  const isOwner = () => !!sbUser && OWNER_IDS.includes(sbUser.id);
   const DAYN = ['א', 'ב', 'ג', 'ד', 'ה', 'ו', 'ש'];
   const DAYL = ['ראשון', 'שני', 'שלישי', 'רביעי', 'חמישי', 'שישי', 'שבת'];
   const CO_GOALS = [['cut', '🔥', 'חיטוב', 'להוריד שומן ולהיראות חטוב'], ['mass', '💪', 'מסת שריר', 'לעלות במשקל ולבנות שריר'], ['strength', '🏋️', 'כוח', 'להרים יותר כבד'], ['fit', '❤️', 'כושר כללי', 'להרגיש טוב, בריא וחזק']];

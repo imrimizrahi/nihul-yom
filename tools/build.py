@@ -231,13 +231,13 @@ rep("    if (v === 'acc') {\n      paintAcc(); buildRems();", "    if (v === 'ac
 rep("row.querySelector('.cal').href = calUrl(g, r);", "")
 
 # ---------- coach: onboarding questions and a personal program for everyone but the owner ----------
-OWNER_PHONES = []  # the owner's phone(s); empty means "the account named אימרי"
+OWNER_IDS = ['dfdf0d4d-ad6e-48bf-9e58-4cfdc3cb724c']  # Imri's account: keeps his own A/B program, never gets the questions
 C = ROOT / 'tools' / 'coach'
 rep('</style>', (C / 'coach.css').read_text(encoding='utf-8') + '</style>')
 rep('<div class="intro" id="intro"', (C / 'coach.html').read_text(encoding='utf-8') + '\n<div class="intro" id="intro"')
 PW = '    <section class="sec">\n      <div class="sechead"><h2>שינוי סיסמה</h2>'
 rep(PW, (C / 'prog.html').read_text(encoding='utf-8') + PW)
-rep('  // ---------- change password ----------', (C / 'coach.js').read_text(encoding='utf-8').replace('__OWNER_PHONES__', repr(OWNER_PHONES)) + '\n  // ---------- change password ----------')
+rep('  // ---------- change password ----------', (C / 'coach.js').read_text(encoding='utf-8').replace('__OWNER_IDS__', repr(OWNER_IDS)) + '\n  // ---------- change password ----------')
 rep("      paintAcc(); buildRems(); paintPush();", "      paintAcc(); buildRems(); paintPush(); paintProg();")
 
 (ROOT / 'index.html').write_text(s, encoding='utf-8')

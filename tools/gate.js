@@ -1,6 +1,5 @@
   // ---------- sign-up / sign-in gate (Supabase Auth) ----------
   // New accounts sign up with email + password and confirm by a link in the email; "forgot password" sends a reset link.
-  // Older accounts were made from the phone number (<phone>@phone.nihulyom.app) and still sign in with the phone.
   const REM_LS = 'daily-goals-remember', SES_KEY = 'daily-goals-in', KNOWN_LS = 'ny-known';
   const SITE = location.origin + location.pathname;
   let authRec = null;
@@ -35,14 +34,11 @@
       $('gForm').hidden = wait || sent; $('gWait').hidden = !wait; $('gSent').hidden = !sent;
       $('gForgot').hidden = wait || np; $('gReset').hidden = m !== 'login';
       $('gfName').hidden = !reg; $('gfId').hidden = np; $('gfPass').hidden = forgot; $('gfPass2').hidden = !(reg || np); $('gfRem').hidden = forgot;
-      $('gIdL').textContent = reg || forgot ? 'מייל' : 'מייל או טלפון';
-      $('gPhone').type = reg || forgot ? 'email' : 'text';
-      $('gPhone').placeholder = reg || forgot ? 'name@gmail.com' : 'מייל או 050-1234567';
-      $('gPhone').setAttribute('autocomplete', reg || forgot ? 'email' : 'username');
+      $('gIdL').textContent = 'מייל';
       $('gPassL').textContent = np ? 'סיסמה חדשה' : 'סיסמה';
       $('gPass').setAttribute('autocomplete', reg || np ? 'new-password' : 'current-password');
       $('gPass').placeholder = reg || np ? '6 תווים לפחות' : '••••••';
-      $('gSub').textContent = wait || sent ? '' : reg ? 'נרשמים עם מייל. נשלח לך קישור לאישור' : forgot ? 'נשלח לך למייל קישור לבחירת סיסמה חדשה' : np ? 'בחר סיסמה חדשה לחשבון' : 'נכנסים עם המייל או הטלפון והסיסמה';
+      $('gSub').textContent = wait || sent ? '' : reg ? 'נרשמים עם מייל. נשלח לך קישור לאישור' : forgot ? 'נשלח לך למייל קישור לבחירת סיסמה חדשה' : np ? 'בחר סיסמה חדשה לחשבון' : 'נכנסים עם המייל והסיסמה';
       $('gGo').textContent = reg ? 'הרשמה' : forgot ? 'שליחת קישור' : np ? 'שמירה וכניסה' : 'כניסה';
       $('gForgot').textContent = reg ? 'כבר יש לי חשבון: כניסה' : forgot || sent ? 'חזרה לכניסה' : 'אין לי חשבון: הרשמה';
       if (sent) { $('gSentT').textContent = info && info.title || ''; $('gSentS').textContent = info && info.sub || ''; $('gResend').hidden = !(info && info.resend); }
@@ -52,12 +48,12 @@
     function fail(msg) { $('gErr').textContent = msg; const c = g.querySelector('.g-card'); c.classList.remove('shk'); void c.offsetWidth; c.classList.add('shk'); sfx.untick(); try { navigator.vibrate && navigator.vibrate([30, 40, 30]); } catch (e) {} }
     const sentSignup = (em) => { lastMail = em; show('sent', { title: 'בדוק את המייל', sub: 'שלחנו קישור אישור ל־' + em + '. לוחצים עליו, ואז חוזרים לכאן ונכנסים עם המייל והסיסמה. לא הגיע? בדוק גם בספאם.', resend: true }); sfx.done && sfx.done(); };
     async function signIn(id, pass) {
-      const email = isMail(id) ? id.toLowerCase() : normPhone(id) + PHONE_MAIL;
+      const email = id.toLowerCase();
       const { data, error } = await sb.auth.signInWithPassword({ email, password: pass });
       if (error) {
         if (netErr(error)) return fail('אין חיבור לאינטרנט. נסה שוב');
         if (/confirm/i.test(error.message || '')) { lastMail = email; return show('sent', { title: 'עוד לא אישרת את המייל', sub: 'פתח את המייל ששלחנו ל־' + email + ' ולחץ על הקישור. אפשר לשלוח אותו שוב.', resend: true }); }
-        return fail(isMail(id) ? 'המייל או הסיסמה לא נכונים' : 'הטלפון או הסיסמה לא נכונים');
+        return fail('המייל או הסיסמה לא נכונים');
       }
       sbUser = data.user; authRec = userRec(sbUser); open();
     }
@@ -76,12 +72,12 @@
           sbUser = data.user; authRec = userRec(sbUser); island.notify({ title: 'הסיסמה עודכנה', sub: 'מעכשיו נכנסים עם החדשה', stay: 4000 }); open(); return;
         }
         if (mode === 'forgot') {
-          if (!isMail(id)) return fail(/^\D*0\d/.test(id) ? 'לחשבון שנפתח עם טלפון אין מייל. דבר עם אימרי' : 'צריך מייל תקין');
+          if (!isMail(id)) return fail('צריך מייל תקין');
           const { error } = await sb.auth.resetPasswordForEmail(id.toLowerCase(), { redirectTo: SITE });
           if (error) return fail(netErr(error) ? 'אין חיבור לאינטרנט. נסה שוב' : /rate|seconds/i.test(error.message || '') ? 'ביקשת לפני רגע. חכה דקה ונסה שוב' : 'השליחה נכשלה. נסה שוב');
           return show('sent', { title: 'בדוק את המייל', sub: 'אם יש חשבון עם ' + id + ', שלחנו אליו קישור לבחירת סיסמה חדשה. לא הגיע? בדוק גם בספאם.' });
         }
-        if (!id) return fail(mode === 'register' ? 'צריך מייל' : 'צריך מייל או טלפון');
+        if (!id) return fail('צריך מייל');
         if (!pass) return fail('צריך סיסמה');
         if (mode === 'register') {
           const name = $('gName').value.trim();
@@ -96,7 +92,7 @@
           if (data.session) { sbUser = data.user; authRec = userRec(sbUser); open(); return; }
           return sentSignup(email);
         }
-        if (!isMail(id) && !/^0\d{8,9}$/.test(normPhone(id))) return fail('צריך מייל, או טלפון כמו 050-1234567');
+        if (!isMail(id)) return fail('מייל לא תקין. לדוגמה name@gmail.com');
         await signIn(id, pass);
       } catch (er) { fail(netErr(er) ? 'אין חיבור לאינטרנט. נסה שוב' : 'משהו השתבש. נסה שוב'); }
       finally { busy = false; $('gGo').disabled = false; }
