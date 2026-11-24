@@ -70,6 +70,7 @@
       if (!res.ok) throw new Error('http ' + res.status);
       const r = await res.json();
       if (!r || !Array.isArray(r.workouts) || !r.workouts.length) throw new Error('empty');
+      if (change && r.source !== 'ai') { coClose(); island.notify({ title: 'שינוי במילים עוד לא פעיל', sub: 'לחץ "תוכנית חדשה" ותענה שוב על השאלות', stay: 6000 }); return; }
       await new Promise((ok) => setTimeout(ok, Math.max(0, 1800 - (Date.now() - t0))));
       co.res = r; co.step = CO_STEPS.length; CO_STEPS[co.step] = 'result'; sfx.done && sfx.done(); coPaint(1);
     } catch (e) {
